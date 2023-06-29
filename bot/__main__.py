@@ -29,12 +29,12 @@ class Foox(commands.Bot):
         return await super().is_owner(user)
     
     async def on_ready(self):
-        channel = await self.fetch_channel("id")
+        channel = await self.fetch_channel(878421905756004383)
         await channel.send('Bot Has Started')
         print(f'Logged In As {self.user}')
     
     async def close(self):
-        channel = await self.fetch_channel("id")
+        channel = await self.fetch_channel(878421905756004383)
         await channel.send("Bot Has Stopped.")
         print(f"Logging Out...")
         await super().close()
