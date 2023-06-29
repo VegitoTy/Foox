@@ -1,0 +1,34 @@
+pip
+aiodns
+aiohttp
+aiosignal
+async-timeout
+attrs
+Brotli
+cchardet
+certifi
+cffi
+charset-normalizer
+ciso8601
+colorama
+colorlog
+dnspython
+docopt
+ed25519
+frozenlist
+discord.py[voice]
+idna
+multidict
+nusex @ git+https://github.com/nusex/nusex@1f39fe0f96f8b7d23865c8d6dcc474acc2a18ada
+pure25519
+pycares
+pycparser
+python-dotenv
+regex
+requests
+urllib3
+yarg
+yarl
+jishaku @ git+https://github.com/Gorialis/jishaku@master
+asyncio
+PyNaCl
