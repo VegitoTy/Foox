@@ -76,12 +76,14 @@ a
         await ctx.send(result)
     
     @commands.command(name='Timeout', aliases=['timeout', 'To', 'to'], description=f"Times Out A Member.\nUsage:- f!To [member] [duration] [reason=None]")
-    @commands.check_any(commands.has_permissions(time_out_members=True))
+    @commands.check_any(commands.has_permissions(moderate_members=True))
     async def _timeout(self, ctx:commands.Context, member:discord.Member, duration:str='2h', *, reason:str='No Reason Provided'):
         "Times Out A Member."
 
         if ctx.author.top_role < member.top_role:
             return await ctx.send('Your not high enough in the role hierarchy to do that.')
+        elif member.guild_permissions.administrator:
+            return await ctx.send("That user is an admin, I can't do that!")
         
         try:
             time = int(duration)
@@ -105,7 +107,7 @@ a
             await ctx.reply('I do not have the required permissions to do that.')
     
     @commands.command(name='RemoveTimeout', aliases=['removetimeout', 'Rto', 'rto'], description=f"Removes Timeout From A Member.\nUsage:- f!Rto [member] [reason=None]")
-    @commands.check_any(commands.has_permissions(time_out_members=True))
+    @commands.check_any(commands.has_permissions(moderate_members=True))
     async def _rto(self, ctx:commands.Context, member:discord.Member, *, reason:str='No Reason Provided'):
         "Removes Timeout From A Member."
 
@@ -145,6 +147,10 @@ a
             await ctx.send(f'{user.name}#{user.discriminator} has been banned.')
             return
         member = member[0]
+
+        if member.guild_permissions.administrator:
+            return await ctx.send("That user is an admin, I can't do that!")
+        
         if ctx.author.top_role > member.top_role:
             try:
                 await member.send(f'You have been banned from `{ctx.guild}` for `{reason}`')
@@ -176,6 +182,9 @@ a
     @commands.check_any(commands.has_permissions(kick_members=True))
     async def _kick(self, ctx:commands.Context, user:discord.Member, *, reason:str='No Reason Provided'):
         "Kicks A Member."
+
+        if user.guild_permissions.administrator:
+            return await ctx.send("That user is an admin, I can't do that!")
 
         if ctx.author.top_role > user.top_role:
             try:
