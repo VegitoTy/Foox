@@ -26,7 +26,7 @@ class Tasks(commands.Cog):
                             await guild.unban(user, reason="Ban Duration Ended")
                         except:
                             pass
-                self.bans.delete_one(document)                  
+                self.bans.delete_one(document)
 
     @_unban.before_loop
     async def _before_unban(self):

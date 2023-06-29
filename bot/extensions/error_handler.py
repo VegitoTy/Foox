@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-error_emote = "<:Cross:997740794171629590>"
+error_emote = "❌"
 
 class error_handler(commands.Cog):
 

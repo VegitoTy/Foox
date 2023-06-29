@@ -82,8 +82,6 @@ a
 
         if ctx.author.top_role < member.top_role:
             return await ctx.send('Your not high enough in the role hierarchy to do that.')
-        elif member.guild_permissions.administrator:
-            return await ctx.send("That user is an admin, I can't do that!")
         
         try:
             time = int(duration)
@@ -125,7 +123,7 @@ a
     @commands.check_any(commands.has_permissions(kick_members=True, ban_members=True))
     async def _ban(self, ctx:commands.Context, user:discord.User, duration:str, *, reason:str='No Reason Provided'):
         "Bans A User. Whether Or Not The User Is In The Server Or Not"
-
+        perm_ban = False
         try:
             durationins = int(duration)
         except:
@@ -147,9 +145,6 @@ a
             await ctx.send(f'{user.name}#{user.discriminator} has been banned.')
             return
         member = member[0]
-
-        if member.guild_permissions.administrator:
-            return await ctx.send("That user is an admin, I can't do that!")
         
         if ctx.author.top_role > member.top_role:
             try:
@@ -182,9 +177,6 @@ a
     @commands.check_any(commands.has_permissions(kick_members=True))
     async def _kick(self, ctx:commands.Context, user:discord.Member, *, reason:str='No Reason Provided'):
         "Kicks A Member."
-
-        if user.guild_permissions.administrator:
-            return await ctx.send("That user is an admin, I can't do that!")
 
         if ctx.author.top_role > user.top_role:
             try:
