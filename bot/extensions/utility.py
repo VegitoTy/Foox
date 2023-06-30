@@ -59,6 +59,9 @@ class Utility(commands.Cog):
     async def _dc(self, ctx:commands.Context):
         async with ctx.typing():
             drawing_data = self.drawing.find_one({})
+            if drawing_data == None:
+                return await ctx.send("There is no drawing data available")
+            
             drawing_list = drawing_data["list"]
 
             first_choice = random.choice(drawing_list)
