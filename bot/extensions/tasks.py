@@ -1,13 +1,17 @@
-import discord, pymongo, time
-from discord.ext import commands, tasks
+import time, pathlib, os
+from dotenv import load_dotenv
 from pymongo import MongoClient
+from discord.ext import commands, tasks
 
+load_dotenv(dotenv_path=pathlib.Path("./.env"))
+
+MONGODB = os.getenv("MONGODB")
 
 class Tasks(commands.Cog):
 
     def __init__(self, bot) -> None:
         self.bot = bot
-        self.cluster = MongoClient("mongodb+srv://VegitoTy:59894179@cluster0.rlky3md.mongodb.net/?retryWrites=true&w=majority")
+        self.cluster = MongoClient(MONGODB)
         self.db = self.cluster["foox"]
         self.bans = self.db["bans"]
 
