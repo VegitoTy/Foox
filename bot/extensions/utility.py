@@ -69,7 +69,7 @@ class Utility(commands.Cog):
 
             await ctx.send(f"Here are the two topics: {first_choice} and {second_choice}")
 
-    @_dc.command(name='Add', aliases=['add'], description=f"Adds Words To The Drawing List\nUsage:- f!Dc Add word1 word2...")
+    @_dc.command(name='add', description=f"Adds Words To The Drawing List\nUsage:- f!Dc add word1 word2...")
     @commands.has_permissions(administrator=True)
     async def _dc_add(self, ctx:commands.Context, *args):
         async with ctx.typing():
@@ -100,7 +100,7 @@ class Utility(commands.Cog):
 
             await ctx.send(message)
 
-    @_dc.command(name='Remove', aliases=['remove'], description=f"Remove Words From The Drawing List\nUsage:- f!Dc Remove word1 word2...")
+    @_dc.command(name='remove', description=f"Remove Words From The Drawing List\nUsage:- f!Dc remove word1 word2...")
     @commands.has_permissions(administrator=True)
     async def _dc_remove(self, ctx:commands.Context, *args):
         async with ctx.typing():
@@ -124,7 +124,7 @@ class Utility(commands.Cog):
             
             await ctx.send(message)
     
-    @_dc.command(name='List', aliases=["list"], description=f"Shows the drawing list\nUsage:- f!Dc List")
+    @_dc.command(name='list', description=f"Shows the drawing list\nUsage:- f!Dc list")
     @commands.has_permissions(administrator=True)
     async def _dc_list(self, ctx:commands.Context):
         async with ctx.typing():
