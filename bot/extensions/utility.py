@@ -1,4 +1,4 @@
-import discord, pymongo, random
+import discord, pymongo, random, asyncio
 from pymongo import MongoClient
 from discord.ext import commands
 
@@ -8,57 +8,58 @@ class Utility(commands.Cog):
         self.bot = bot
         self.cluster = MongoClient("mongodb+srv://VegitoTy:59894179@cluster0.rlky3md.mongodb.net/?retryWrites=true&w=majority")
         self.db = self.cluster["foox"]
-        self.drawing = self.db["drawing"]
+        self.utility = self.db["utility"]
 
     @commands.command(name='Userinfo', aliases=['whois', 'ui', 'UI'], description=f"Shows The Info Of A User\nUsage:- f!Ui [User]")
     async def _ui(self, ctx:commands.Context, user:discord.User=None):
-        if not user:
-            user = ctx.author
-        
-        member = await ctx.guild.query_members(user_ids=[user.id])
-        if len(member) == 0:
-            created_at = user.created_at
-            embed = discord.Embed(colour=0x3498db, timestamp=ctx.message.created_at)
-            embed.set_author(name=f'User Info - {user}')
-            embed.set_thumbnail(url=user.avatar.url)
-            embed.set_footer(text=f'Requested by {ctx.author}', icon_url=ctx.author.display_avatar.url)
-            embed.add_field(name='ID: ', value=user.id, inline=False)
-            embed.add_field(name='Name: ',value=user.name,inline=False)
-            embed.add_field(name='Created at:',value=discord.utils.format_dt(dt=created_at),inline=False)
-        else:
-            member:discord.Member = member[0]
-            created_at = member.created_at
-            joined_at = member.joined_at
-            rlist = []
-            ignored_roles = 0
-            for role in member.roles:
-                if len(rlist) >= 15:
-                    ignored_roles += 1
-                if role.name != "@everyone" and len(rlist) < 15:
-                    rlist.append(role.mention)
-            e = ""
-            for role in rlist:
-                e += f"{role}, "     
-            embed = discord.Embed(colour=member.color, timestamp=ctx.message.created_at)
-            embed.set_author(name=f'User Info - {member}')
-            embed.set_thumbnail(url=member.avatar.url)
-            embed.set_footer(text=f'Requested by {ctx.author}', icon_url=ctx.author.display_avatar.url)
-            embed.add_field(name='ID: ',value=member.id,inline=False)
-            embed.add_field(name='Name:',value=member.name,inline=False)
-            embed.add_field(name='Created at:',value=discord.utils.format_dt(created_at),inline=False)
-            embed.add_field(name='Joined at:',value=discord.utils.format_dt(joined_at),inline=False)
-            if ignored_roles == 0:
-                embed.add_field(name=f'Roles: {len(member.roles)}', value=f'{e[:-2]}',inline=False)
+        async with ctx.typing():
+            await asyncio.sleep(2)
+            if not user:
+                user = ctx.author
+            
+            member = await ctx.guild.query_members(user_ids=[user.id])
+            if len(member) == 0:
+                created_at = user.created_at
+                embed = discord.Embed(colour=0x3498db, timestamp=ctx.message.created_at)
+                embed.set_author(name=f'User Info - {user}')
+                embed.set_thumbnail(url=user.avatar.url)
+                embed.set_footer(text=f'Requested by {ctx.author}', icon_url=ctx.author.display_avatar.url)
+                embed.add_field(name='ID: ', value=user.id, inline=False)
+                embed.add_field(name='Name: ',value=user.name,inline=False)
+                embed.add_field(name='Created at:',value=discord.utils.format_dt(dt=created_at),inline=False)
             else:
-                embed.add_field(name=f'Roles: {len(member.roles)}', value=f'{e[:-2]} And {ignored_roles} more roles..',inline=False)
-            embed.add_field(name='Top Role:',value=member.top_role.mention,inline=False)
-        await ctx.send(f'Info about {user}', embed=embed)
-
+                member:discord.Member = member[0]
+                created_at = member.created_at
+                joined_at = member.joined_at
+                rlist = []
+                ignored_roles = 0
+                for role in member.roles:
+                    if len(rlist) >= 15:
+                        ignored_roles += 1
+                    if role.name != "@everyone" and len(rlist) < 15:
+                        rlist.append(role.mention)
+                e = ""
+                for role in rlist:
+                    e += f"{role}, "     
+                embed = discord.Embed(colour=member.color, timestamp=ctx.message.created_at)
+                embed.set_author(name=f'User Info - {member}')
+                embed.set_thumbnail(url=member.avatar.url)
+                embed.set_footer(text=f'Requested by {ctx.author}', icon_url=ctx.author.display_avatar.url)
+                embed.add_field(name='ID: ',value=member.id,inline=False)
+                embed.add_field(name='Name:',value=member.name,inline=False)
+                embed.add_field(name='Created at:',value=discord.utils.format_dt(created_at),inline=False)
+                embed.add_field(name='Joined at:',value=discord.utils.format_dt(joined_at),inline=False)
+                if ignored_roles == 0:
+                    embed.add_field(name=f'Roles: {len(member.roles)}', value=f'{e[:-2]}',inline=False)
+                else:
+                    embed.add_field(name=f'Roles: {len(member.roles)}', value=f'{e[:-2]} And {ignored_roles} more roles..',inline=False)
+                embed.add_field(name='Top Role:',value=member.top_role.mention,inline=False)
+            await ctx.send(f'Info about {user}', embed=embed)
     
     @commands.group(name='DrawingChallenge', aliases=['drawingchallenge', 'DC', 'dc'], description=f"Sends two random topics for a drawing challenge\nUsage:- f!dc", invoke_without_command=True, case_insensitive=True)
     async def _dc(self, ctx:commands.Context):
         async with ctx.typing():
-            drawing_data = self.drawing.find_one({})
+            drawing_data = self.utility.find_one({"_id":"drawing"})
             if drawing_data == None:
                 return await ctx.send("There is no drawing data available")
             
@@ -76,9 +77,11 @@ class Utility(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def _dc_add(self, ctx:commands.Context, *args):
         async with ctx.typing():
-            drawing_data = self.drawing.find_one({})
+            args = list(args)
+
+            drawing_data = self.utility.find_one({"_id":"drawing"})
             if drawing_data == None:
-                self.drawing.insert_one({"list": args})
+                self.utility.insert_one({"_id": "drawing", "list": args})
                 return await ctx.send("Added")
             
             drawing_list:list = drawing_data["list"]
@@ -92,7 +95,7 @@ class Utility(commands.Cog):
                 else:
                     unique_list.append(item)
             
-            self.drawing.update_one(drawing_data, {"list": unique_list})
+            self.utility.replace_one(drawing_data, {"_id": "drawing", "list": unique_list})
 
             if duplicates == []:
                 return await ctx.send("Added.")
@@ -107,16 +110,18 @@ class Utility(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def _dc_remove(self, ctx:commands.Context, *args):
         async with ctx.typing():
-            drawing_data = self.drawing.find_one({})
+            args = list(args)
+
+            drawing_data = self.utility.find_one({"_id": "drawing"})
             if drawing_data == None:
                 return await ctx.send("There is no drawing data available.")
             
             drawing_list:list = drawing_data["list"]
 
+            missing = [item for item in args if item not in drawing_list]
             updated_drawing_list = [item for item in drawing_list if item not in args]
-            missing = [item for item in args if item not in updated_drawing_list]
 
-            self.drawing.update_one(drawing_data, {"list": updated_drawing_list})
+            self.utility.replace_one(drawing_data, {"_id": "drawing", "list": updated_drawing_list})
 
             if missing == []:
                 return await ctx.send("Done!")
@@ -131,7 +136,7 @@ class Utility(commands.Cog):
     @commands.has_permissions(administrator=True)
     async def _dc_list(self, ctx:commands.Context):
         async with ctx.typing():
-            drawing_data = self.drawing.find_one({})
+            drawing_data = self.utility.find_one({"_id": "drawing"})
             if drawing_data == None:
                 return await ctx.send("There is no drawing data available.")
             
@@ -142,6 +147,149 @@ class Utility(commands.Cog):
             message = message.replace(',', '', 1)
 
             await ctx.send(message)
+    
+    @commands.command(name='Emoji', aliases=['emoji'], description=f"Sends a random emoji\nUsage:- f!Emoji")
+    async def _emoji(self, ctx:commands.Context):
+        async with ctx.typing():
+            random_emoji = random.choice(ctx.guild.emojis)
+
+            await ctx.send(random_emoji)
+
+    @commands.group(name='Pat', aliases=['pat'], description=f"Sends the Foox Pat Emoji\nUsage:- f!Pat", invoke_without_command=True, case_insensitive=True)
+    async def _pat(self, ctx:commands.Context):
+        async with ctx.typing():
+            emoji_data = self.utility.find_one({"_id": "pat"})
+            emoji = emoji_data["pat"]
+
+            await ctx.send(emoji)
+    
+    @_pat.command(name='update', description=f"Updates the pat emoji\nUsage:- f!Pat update")
+    @commands.has_permissions(administrator=True)
+    async def _pat_update(self, ctx:commands.Context, emoji:discord.Emoji):
+        async with ctx.typing():
+            emoji_data = self.utility.find_one_and_replace({"_id": "pat"}, {"_id": "pat", "pat": str(emoji)})
+            prev_emoji = emoji_data["pat"]
+
+            await ctx.send(f"Replaced {prev_emoji} with {emoji}")
+    
+    @commands.group(name='Screm', aliases=['screm'], description=f"Sends the Foox Screm Emoji\nUsage:- f!Screm", invoke_without_command=True, case_insensitive=True)
+    async def _screm(self, ctx:commands.Context):
+        async with ctx.typing():
+            emoji_data = self.utility.find_one({"_id": "screm"})
+            emoji = emoji_data["screm"]
+
+            await ctx.send(emoji)
+    
+    @_screm.command(name='update', description=f"Updates the screm emoji\nUsage:- f!Screm update")
+    @commands.has_permissions(administrator=True)
+    async def _screm_update(self, ctx:commands.Context, emoji:discord.Emoji):
+        async with ctx.typing():
+            emoji_data = self.utility.find_one_and_replace({"_id": "screm"}, {"_id": "screm", "screm": str(emoji)})
+            prev_emoji = emoji_data["screm"]
+
+            await ctx.send(f"Replaced {prev_emoji} with {emoji}")
+
+    @commands.group(name='Site', aliases=['site'], description=f"Sends a link to the Foox website\nUsage:- f!Site", invoke_without_command=True, case_insensitive=True)
+    async def _site(self, ctx:commands.Context):
+        async with ctx.typing():
+            site_data = self.utility.find_one({"_id": "site"})
+            site = site_data["site"]
+
+            await ctx.send(site)
+    
+    @_site.command(name="update", description=f"Updates the link to the Foox website\nUsage:- f!Site update")
+    @commands.has_permissions(administrator=True)
+    async def _site_update(self, ctx:commands.Context, link:str):
+        async with ctx.typing():
+            site_data = self.utility.find_one_and_replace({"_id": "site"}, {"_id": "site", "site": link})
+            prev_site = site_data["site"]
+
+            await ctx.send(f"Replaced `{prev_site}` with `{link}`")
+    
+    @commands.group(name='Shop', aliases=['shop'], description=f"Sends a link to the Foox Shop\nUsage:- f!Shop", invoke_without_command=True, case_insensitive=True)
+    async def _shop(self, ctx:commands.Context):
+        async with ctx.typing():
+            shop_data = self.utility.find_one({"_id": "shop"})
+            shop = shop_data["shop"]
+
+            await ctx.send(shop)
+    
+    @_shop.command(name="update", description=f"Updates the link to the Foox Shop\nUsage:- f!Shop update")
+    @commands.has_permissions(administrator=True)
+    async def _shop_update(self, ctx:commands.Context, link:str):
+        async with ctx.typing():
+            shop_data = self.utility.find_one_and_replace({"_id": "shop"}, {"_id": "shop", "shop": link})
+            prev_site = shop_data["shop"]
+
+            await ctx.send(f"Replaced `{prev_site}` with `{link}`")
+
+    @commands.group(name='Patreon', aliases=['patreon', 'pt'], description=f"Sends a link to the Foox Patreon\nUsage:- f!Patreon", invoke_without_command=True, case_insensitive=True)
+    async def _patreon(self, ctx:commands.Context):
+        async with ctx.typing():
+            patreon_data = self.utility.find_one({"_id": "patreon"})
+            patreon = patreon_data["patreon"]
+
+            await ctx.send(patreon)
+
+    @_patreon.command(name="update", description=f"Updates the link to the Foox Patreon\nUsage:- f!Patreon update")
+    @commands.has_permissions(administrator=True)
+    async def _patreon_update(self, ctx:commands.Context, link:str):
+        async with ctx.typing():
+            patreon_data = self.utility.find_one_and_replace({"_id": "patreon"}, {"_id": "patreon", "patreon": link})
+            prev_site = patreon_data["patreon"]
+
+            await ctx.send(f"Replaced `{prev_site}` with `{link}`")
+    
+    @commands.group(name='Youtube', aliases=['youtube', 'YT', 'Yt', 'yt'], description=f"Sends a link to the Foox Youtube\nUsage:- f!Youtube", invoke_without_command=True, case_insensitive=True)
+    async def _youtube(self, ctx:commands.Context):
+        async with ctx.typing():
+            youtube_data = self.utility.find_one({"_id": "youtube"})
+            youtube = youtube_data["youtube"]
+
+            await ctx.send(youtube)
+
+    @_youtube.command(name="update", description=f"Updates the link to the Foox Youtube\nUsage:- f!Youtube update")
+    @commands.has_permissions(administrator=True)
+    async def _youtube_update(self, ctx:commands.Context, link:str):
+        async with ctx.typing():
+            youtube_data = self.utility.find_one_and_replace({"_id": "youtube"}, {"_id": "youtube", "youtube": link})
+            prev_site = youtube_data["youtube"]
+
+            await ctx.send(f"Replaced `{prev_site}` with `{link}`")
+    
+    @commands.group(name='Twitter', aliases=['twitter', 'TwT', 'Twt', 'twt'], description=f"Sends a link to the Foox twitter\nUsage:- f!Twitter", invoke_without_command=True, case_insensitive=True)
+    async def _twitter(self, ctx:commands.Context):
+        async with ctx.typing():
+            twitter_data = self.utility.find_one({"_id": "twitter"})
+            twitter = twitter_data["twitter"]
+
+            await ctx.send(twitter)
+
+    @_twitter.command(name="update", description=f"Updates the link to the Foox Twitter\nUsage:- f!Twitter update")
+    @commands.has_permissions(administrator=True)
+    async def _twitter_update(self, ctx:commands.Context, link:str):
+        async with ctx.typing():
+            twitter_data = self.utility.find_one_and_replace({"_id": "twitter"}, {"_id": "twitter", "twitter": link})
+            prev_site = twitter_data["twitter"]
+
+            await ctx.send(f"Replaced `{prev_site}` with `{link}`")
+    
+    @commands.group(name='Kofi', aliases=['kofi'], description=f"Sends a link to the Foox Ko-Fi page\nUsage:- f!Kofi", invoke_without_command=True, case_insensitive=True)
+    async def _kofi(self, ctx:commands.Context):
+        async with ctx.typing():
+            kofi_data = self.utility.find_one({"_id": "kofi"})
+            kofi = kofi_data["kofi"]
+
+            await ctx.send(kofi)
+
+    @_kofi.command(name="update", description=f"Updates the link to the Foox Ko-Fi page\nUsage:- f!Kofi update")
+    @commands.has_permissions(administrator=True)
+    async def _kofi_update(self, ctx:commands.Context, link:str):
+        async with ctx.typing():
+            kofi_data = self.utility.find_one_and_replace({"_id": "kofi"}, {"_id": "kofi", "kofi": link})
+            prev_site = kofi_data["kofi"]
+
+            await ctx.send(f"Replaced `{prev_site}` with `{link}`")
 
 async def setup(bot:commands.Bot) -> None:
     await bot.add_cog(

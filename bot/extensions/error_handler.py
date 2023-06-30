@@ -35,6 +35,7 @@ class error_handler(commands.Cog):
             description = f"> User Not Found"
         elif isinstance(exception, TypeError):
             description = "> Invalid option type"
+            sus = True
         elif isinstance(exception, commands.CommandNotFound):
             return
         else:
