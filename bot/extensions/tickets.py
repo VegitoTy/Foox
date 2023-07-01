@@ -10,6 +10,7 @@ class ReasonModal(discord.ui.Modal, title="Close"):
         embed.add_field(name=f"Opened By", value=f"{user.mention}", inline=True)
         embed.add_field(name=f"Closed By", value=f"{interaction.user.mention}", inline=True)
         embed.add_field(name=f"Reason", value=f"{self.answer}", inline=True)
+        embed.set_thumbnail(url=user.avatar.url)
         await channel.send(embed=embed)
 
         await interaction.response.send_message("Closing..")
