@@ -1,6 +1,7 @@
 import discord, os, pathlib
 from discord.ext import commands
 from dotenv import load_dotenv
+from bot.extensions.tickets import TicketView, InTicketView, CloseTicket
 
 load_dotenv(dotenv_path=pathlib.Path("./.env"))
 
@@ -8,7 +9,7 @@ TOKEN = os.getenv("TOKEN")
 
 class Foox(commands.Bot):
     def __init__(self):
-        super().__init__(command_prefix=commands.when_mentioned_or("f!"),
+        super().__init__(command_prefix=commands.when_mentioned_or("f!", "F!"),
                          status=discord.Status.idle,
                          activity=discord.Activity(type=discord.ActivityType.watching, name="The Foox Den"),
                          intents=discord.Intents.all()
@@ -20,6 +21,9 @@ class Foox(commands.Bot):
                 extension = f"bot.extensions.{filename[:-3]}"
                 await self.load_extension(extension)
         await self.load_extension("jishaku")
+        self.add_view(TicketView())
+        self.add_view(InTicketView())
+        self.add_view(CloseTicket())
         await bot.tree.sync()
 
     async def is_owner(self, user:discord.User):
