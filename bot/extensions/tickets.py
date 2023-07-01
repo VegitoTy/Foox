@@ -65,6 +65,8 @@ class TicketView(discord.ui.View):
         global user
         user = interaction.user
 
+        view = InTicketView()
+
         tickets_cg = discord.utils.get(interaction.guild.categories, id=1124373765879496785)
 
         ticket:discord.TextChannel = await tickets_cg.create_text_channel(f"ticket-{interaction.user.name}")
@@ -76,7 +78,7 @@ class TicketView(discord.ui.View):
 
         embed = discord.Embed(title="Foox Den Support", description=f"Hi {interaction.user.mention}!\nSomeone will be here to help you with your query soon.\nMeanwhile describe your issue and wait for a response.", colour=interaction.user.colour)
         embed.set_thumbnail(url=interaction.guild.icon.url)
-        await ticket.send("<@&879161719358906470>", embed=embed)
+        await ticket.send("<@&879161719358906470>", embed=embed, view=view)
 
 class Tickets(commands.Cog):
 
