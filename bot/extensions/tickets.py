@@ -5,14 +5,14 @@ class ReasonModal(discord.ui.Modal, title="Close"):
     answer = discord.ui.TextInput(label = "Reason", style = discord.TextStyle.paragraph, placeholder="Reason for closing the ticket. Eg:- Resolved", required=True)
 
     async def on_submit(self, interaction:discord.Interaction):
-        channel = interaction.guild.fetch_channel(1124607726530609214)
+        channel = interaction.guild.get_channel(1124607726530609214)
         embed = discord.Embed(title="Ticket Closed", colour=0xADD8E6)
         embed.add_field(name=f"Opened By", value=f"{user.mention}", inline=True)
         embed.add_field(name=f"Closed By", value=f"{interaction.user.mention}", inline=True)
         embed.add_field(name=f"Reason", value=f"{self.answer}", inline=True)
         channel.send(embed=embed)
 
-        await interaction.channel.send("Closing..")
+        await interaction.response.send_message("Closing..")
         await asyncio.sleep(1)
         await interaction.channel.delete()
 
@@ -22,14 +22,14 @@ class CloseTicket(discord.ui.View):
     
     @discord.ui.button(label="Close", custom_id="close", style=discord.ButtonStyle.red)
     async def _close(self, interaction:discord.Interaction, button:discord.ui.Button):
-        channel = interaction.guild.fetch_channel(1124607726530609214)
+        channel = interaction.guild.get_channel(1124607726530609214)
         embed = discord.Embed(title="Ticket Closed", colour=0xADD8E6)
         embed.add_field(name=f"Opened By", value=f"{user.mention}", inline=True)
         embed.add_field(name=f"Closed By", value=f"{interaction.user.mention}", inline=True)
         embed.add_field(name=f"Reason", value=f"No reason given", inline=True)
         channel.send(embed=embed)
 
-        await interaction.channel.send("Closing..")
+        await interaction.response.send_message("Closing..")
         await asyncio.sleep(1)
         await interaction.channel.delete()
 
@@ -51,8 +51,7 @@ class InTicketView(discord.ui.View):
         if not interaction.user.guild_permissions.administrator:
             return await interaction.response.send_message("You do not have the required permissions to do that", ephemeral=True)
 
-        await interaction.channel.set_permissions(overwrite=None)
-        await interaction.channel.set_permissions(interaction.guild.default_role, view_channel=False)
+        await interaction.channel.set_permissions(target=user, overwrite=None)
 
         await interaction.response.send_message(f"Ticket Saved. Requested By {interaction.user.mention}")
 
@@ -63,6 +62,7 @@ class TicketView(discord.ui.View):
     @discord.ui.button(label="Open A Ticket", custom_id="ticket", style=discord.ButtonStyle.green, emoji="<:FooxGun:1015872747072663592>")
     async def _ticket(self, interaction:discord.Interaction, button:discord.ui.Button):
         global user
+
         user = interaction.user
 
         view = InTicketView()
