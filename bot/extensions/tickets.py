@@ -1,4 +1,4 @@
-import discord, asyncio, pathlib, os
+import discord, asyncio, pathlib, os, certifi
 from discord.ext import commands
 from pymongo import MongoClient
 from dotenv import load_dotenv
@@ -9,14 +9,14 @@ MONGODB = os.getenv("MONGODB")
 
 class ReasonModal(discord.ui.Modal, title="Close"):
     answer = discord.ui.TextInput(label = "Reason", style = discord.TextStyle.paragraph, placeholder="Reason for closing the ticket. Eg:- Resolved", required=True)
-    cluster = MongoClient(MONGODB)
-    db = cluster["foox"]
+    cluster = MongoClient(MONGODB, tlsCAFile=certifi.where())
+    db = cluster["foox"]   
     tickets = db["tickets"]
 
 
     async def on_submit(self, interaction:discord.Interaction):
         ticket_data = self.tickets.find_one({"channel_id": interaction.channel.id})
-        user_id = ticket_data["user_data"]
+        user_id = ticket_data["user_id"]
         user_left = ticket_data["user_left"]
         if not user_left:
             user = await interaction.guild.fetch_member(user_id)
@@ -47,14 +47,14 @@ class ReasonModal(discord.ui.Modal, title="Close"):
 class CloseTicket(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
-        self.cluster = MongoClient(MONGODB)
+        self.cluster = MongoClient(MONGODB, tlsCAFile=certifi.where())
         self.db = self.cluster["foox"]
         self.tickets = self.db["tickets"]
     
     @discord.ui.button(label="Close", custom_id="close", style=discord.ButtonStyle.red)
     async def _close(self, interaction:discord.Interaction, button:discord.ui.Button):
         ticket_data = self.tickets.find_one({"channel_id": interaction.channel.id})
-        user_id = ticket_data["user_data"]
+        user_id = ticket_data["user_id"]
         user_left = ticket_data["user_left"]
         if not user_left:
             user = await interaction.guild.fetch_member(user_id)
@@ -85,7 +85,7 @@ class CloseTicket(discord.ui.View):
 class InTicketView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
-        self.cluster = MongoClient(MONGODB)
+        self.cluster = MongoClient(MONGODB, tlsCAFile=certifi.where())
         self.db = self.cluster["foox"]
         self.tickets = self.db["tickets"]
     

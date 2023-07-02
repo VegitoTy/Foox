@@ -1,4 +1,4 @@
-import time, pathlib, os
+import time, pathlib, os, certifi
 from dotenv import load_dotenv
 from pymongo import MongoClient
 from discord.ext import commands, tasks
@@ -11,7 +11,7 @@ class Tasks(commands.Cog):
 
     def __init__(self, bot:commands.Bot) -> None:
         self.bot = bot
-        self.cluster = MongoClient(MONGODB)
+        self.cluster = MongoClient(MONGODB, tlsCAFile=certifi.where())
         self.db = self.cluster["foox"]
         self.bans = self.db["bans"]
         self.tickets = self.db["tickets"]
@@ -42,7 +42,7 @@ class Tasks(commands.Cog):
         cursor = self.tickets.find({})
         for document in cursor:
             if document["user_left"] or document["status"] == "CLOSED":
-                return
+                continue
 
             guild_id = document["guild_id"]
             channel_id = document["channel_id"]

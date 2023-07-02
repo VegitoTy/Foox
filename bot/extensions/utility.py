@@ -1,5 +1,5 @@
 import discord
-import random, asyncio, pathlib, os
+import random, asyncio, pathlib, os, certifi
 from dotenv import load_dotenv
 from pymongo import MongoClient
 from discord.ext import commands
@@ -12,7 +12,7 @@ class Utility(commands.Cog):
 
     def __init__(self, bot) -> None:
         self.bot = bot
-        self.cluster = MongoClient(MONGODB)
+        self.cluster = MongoClient(MONGODB, tlsCAFile=certifi.where())
         self.db = self.cluster["foox"]
         self.utility = self.db["utility"]
 
