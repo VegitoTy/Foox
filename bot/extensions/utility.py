@@ -161,17 +161,17 @@ class Utility(commands.Cog):
 
             await ctx.send(random_emoji)
 
-    @commands.group(name='Pat', aliases=['pat'], description=f"Sends the Foox Pat Emoji\nUsage:- f!Pat", invoke_without_command=True, case_insensitive=True)
-    async def _pat(self, ctx:commands.Context):
+    @commands.group(name='Cookie', aliases=['cookie', 'ck'], description=f"Sends the Foox Cookie Emoji\nUsage:- f!Cookie", invoke_without_command=True, case_insensitive=True)
+    async def _cookie(self, ctx:commands.Context):
         async with ctx.typing():
             emoji_data = self.utility.find_one({"_id": "pat"})
             emoji = emoji_data["pat"]
 
             await ctx.send(emoji)
     
-    @_pat.command(name='update', description=f"Updates the pat emoji\nUsage:- f!Pat update")
+    @_cookie.command(name='update', description=f"Updates the cookie emoji\nUsage:- f!Cookie update")
     @commands.has_permissions(administrator=True)
-    async def _pat_update(self, ctx:commands.Context, emoji:discord.Emoji):
+    async def _cookie_update(self, ctx:commands.Context, emoji:discord.Emoji):
         async with ctx.typing():
             emoji_data = self.utility.find_one_and_replace({"_id": "pat"}, {"_id": "pat", "pat": str(emoji)})
             prev_emoji = emoji_data["pat"]
